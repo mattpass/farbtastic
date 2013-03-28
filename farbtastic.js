@@ -4,44 +4,29 @@
  * Licensed under the GPL license:
  *   http://www.gnu.org/licenses/gpl.html
  */
-(function($) {
 
-$.fn.farbtastic = function (options) {
-  $.farbtastic(this, options);
+farbtasticFunc = function (options) {
+  farbtastic(this, options);
   return this;
 };
 
-$.farbtastic = function (container, callback) {
-  var container = $(container).get(0);
-  return container.farbtastic || (container.farbtastic = new $._farbtastic(container, callback));
+farbtastic = function (container, callback) {
+  var container = document.getElementById(container);
+  var callback = document.getElementById(callback);
+  return container.farbtastic || (container.farbtastic = new _farbtastic(container, callback));
 };
 
-$._farbtastic = function (container, callback) {
+_farbtastic = function (container, callback) {
   // Store farbtastic object
   var fb = this;
 
   // Insert markup
-  $(container).html('<div class="farbtastic"><div class="color"></div><div class="wheel"></div><div class="overlay"></div><div class="h-marker marker"></div><div class="sl-marker marker"></div></div>');
-  var e = $('.farbtastic', container);
-  fb.wheel = $('.wheel', container).get(0);
+  container.innerHTML = '<div class="farbtastic"><div class="color"></div><div class="wheel"></div><div class="overlay"></div><div class="h-marker marker"></div><div class="sl-marker marker"></div></div>';
+  fb.wheel = document.getElementsByClassName('wheel')[0];
   // Dimensions
   fb.radius = 84;
   fb.square = 100;
   fb.width = 194;
-
-  // Fix background PNGs in IE6
-  if (navigator.appVersion.match(/MSIE [0-6]\./)) {
-    $('*', e).each(function () {
-      if (this.currentStyle.backgroundImage != 'none') {
-        var image = this.currentStyle.backgroundImage;
-        image = this.currentStyle.backgroundImage.substring(5, image.length - 2);
-        $(this).css({
-          'backgroundImage': 'none',
-          'filter': "progid:DXImageTransform.Microsoft.AlphaImageLoader(enabled=true, sizingMethod=crop, src='" + image + "')"
-        });
-      }
-    });
-  }
 
   /**
    * Link to the given element(s) or callback.
@@ -49,7 +34,8 @@ $._farbtastic = function (container, callback) {
   fb.linkTo = function (callback) {
     // Unbind previous nodes
     if (typeof fb.callback == 'object') {
-      $(fb.callback).unbind('keyup', fb.updateValue);
+      console.log("Doesn't do anything?");
+      fb.callback.removeEventListener('keyup', fb.updateValue);
     }
 
     // Reset color
@@ -60,10 +46,10 @@ $._farbtastic = function (container, callback) {
       fb.callback = callback;
     }
     else if (typeof callback == 'object' || typeof callback == 'string') {
-      fb.callback = $(callback);
-      fb.callback.bind('keyup', fb.updateValue);
-      if (fb.callback.get(0).value) {
-        fb.setColor(fb.callback.get(0).value);
+      fb.callback = callback;
+      fb.callback.removeEventListener('keyup',fb.updateValue);
+      if (fb.callback.value) {
+        fb.setColor(fb.callback.value);
       }
     }
     return this;
@@ -106,8 +92,7 @@ $._farbtastic = function (container, callback) {
    * of the widget.
    */
   fb.widgetCoords = function (event) {
-    var offset = $(fb.wheel).offset();
-    return { x: (event.pageX - offset.left) - fb.width / 2, y: (event.pageY - offset.top) - fb.width / 2 };
+    return { x: (event.pageX - fb.wheel.offsetParent.offsetLeft) - fb.width / 2, y: (event.pageY - fb.wheel.offsetParent.offsetTop) - fb.width / 2 };
   };
 
   /**
@@ -116,7 +101,8 @@ $._farbtastic = function (container, callback) {
   fb.mousedown = function (event) {
     // Capture mouse
     if (!document.dragging) {
-      $(document).bind('mousemove', fb.mousemove).bind('mouseup', fb.mouseup);
+      document.addEventListener('mousemove', fb.mousemove);
+	document.addEventListener('mouseup', fb.mouseup);
       document.dragging = true;
     }
 
@@ -155,8 +141,8 @@ $._farbtastic = function (container, callback) {
    */
   fb.mouseup = function () {
     // Uncapture mouse
-    $(document).unbind('mousemove', fb.mousemove);
-    $(document).unbind('mouseup', fb.mouseup);
+    document.removeEventListener('mousemove', fb.mousemove);
+    document.removeEventListener('mouseup', fb.mouseup);
     document.dragging = false;
   };
 
@@ -166,33 +152,25 @@ $._farbtastic = function (container, callback) {
   fb.updateDisplay = function () {
     // Markers
     var angle = fb.hsl[0] * 6.28;
-    $('.h-marker', e).css({
-      left: Math.round(Math.sin(angle) * fb.radius + fb.width / 2) + 'px',
-      top: Math.round(-Math.cos(angle) * fb.radius + fb.width / 2) + 'px'
-    });
+    document.getElementsByClassName('h-marker')[0].style.left = Math.round(Math.sin(angle) * fb.radius + fb.width / 2) + 'px';
+    document.getElementsByClassName('h-marker')[0].style.top = Math.round(-Math.cos(angle) * fb.radius + fb.width / 2) + 'px';
 
-    $('.sl-marker', e).css({
-      left: Math.round(fb.square * (.5 - fb.hsl[1]) + fb.width / 2) + 'px',
-      top: Math.round(fb.square * (.5 - fb.hsl[2]) + fb.width / 2) + 'px'
-    });
+    document.getElementsByClassName('sl-marker')[0].style.left = Math.round(fb.square * (.5 - fb.hsl[1]) + fb.width / 2) + 'px';
+    document.getElementsByClassName('sl-marker')[0].style.top = Math.round(fb.square * (.5 - fb.hsl[2]) + fb.width / 2) + 'px';
 
     // Saturation/Luminance gradient
-    $('.color', e).css('backgroundColor', fb.pack(fb.HSLToRGB([fb.hsl[0], 1, 0.5])));
+    document.getElementById('color').style.backgroundColor = fb.pack(fb.HSLToRGB([fb.hsl[0], 1, 0.5]));
 
     // Linked elements or callback
     if (typeof fb.callback == 'object') {
       // Set background/foreground color
-      $(fb.callback).css({
-        backgroundColor: fb.color,
-        color: fb.hsl[2] > 0.5 ? '#000' : '#fff'
-      });
+      document.getElementById(fb.callback.id).style.backgroundColor = fb.color;
+      document.getElementById(fb.callback.id).style.color = fb.hsl[2] > 0.5 ? '#000' : '#fff';
 
       // Change linked value
-      $(fb.callback).each(function() {
-        if (this.value && this.value != fb.color) {
-          this.value = fb.color;
+        if (callback.value && callback.value != fb.color) {
+          callback.value = fb.color;
         }
-      });
     }
     else if (typeof fb.callback == 'function') {
       fb.callback.call(fb, fb.color);
@@ -262,7 +240,7 @@ $._farbtastic = function (container, callback) {
   };
 
   // Install mousedown handler (the others are set on the document on-demand)
-  $('*', e).mousedown(fb.mousedown);
+  document.onmousedown = fb.mousedown;
 
     // Init color
   fb.setColor('#000000');
@@ -272,5 +250,3 @@ $._farbtastic = function (container, callback) {
     fb.linkTo(callback);
   }
 };
-
-})(jQuery);
