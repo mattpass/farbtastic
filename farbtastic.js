@@ -47,7 +47,7 @@ _farbtastic = function (container, callback) {
     }
     else if (typeof callback == 'object' || typeof callback == 'string') {
       fb.callback = callback;
-      fb.callback.removeEventListener('keyup',fb.updateValue);
+      fb.callback.addEventListener('keyup',fb.updateValue);
       if (fb.callback.value) {
         fb.setColor(fb.callback.value);
       }
@@ -102,7 +102,7 @@ _farbtastic = function (container, callback) {
     // Capture mouse
     if (!document.dragging) {
       document.addEventListener('mousemove', fb.mousemove);
-	document.addEventListener('mouseup', fb.mouseup);
+      document.addEventListener('mouseup', fb.mouseup);
       document.dragging = true;
     }
 
@@ -159,7 +159,7 @@ _farbtastic = function (container, callback) {
     document.getElementsByClassName('sl-marker')[0].style.top = Math.round(fb.square * (.5 - fb.hsl[2]) + fb.width / 2) + 'px';
 
     // Saturation/Luminance gradient
-    document.getElementById('color').style.backgroundColor = fb.pack(fb.HSLToRGB([fb.hsl[0], 1, 0.5]));
+    document.getElementsByClassName('color')[0].style.backgroundColor = fb.pack(fb.HSLToRGB([fb.hsl[0], 1, 0.5]));
 
     // Linked elements or callback
     if (typeof fb.callback == 'object') {
@@ -240,7 +240,7 @@ _farbtastic = function (container, callback) {
   };
 
   // Install mousedown handler (the others are set on the document on-demand)
-  document.onmousedown = fb.mousedown;
+  document.getElementsByClassName('farbtastic')[0].onmousedown = fb.mousedown;
 
     // Init color
   fb.setColor('#000000');
